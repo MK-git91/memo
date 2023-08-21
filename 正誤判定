@@ -1,0 +1,38 @@
+
+//----------【サーブレット】正誤判定
+// 正誤判定
+if (button != null) {
+  String decision = CorrJudg.Corrjudgment(button);
+  request.setAttribute("decision", decision);
+  
+  RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/jsp/answer.jsp");
+  dispatcher.forward(request, response);
+  return;
+}
+
+//----------【ロジック】正誤判定
+// モデルに入れる
+public class CorrJudg {
+	
+	// 引数にanswerIdを受け取り、Aか判定し、文字列を返すメソッド
+	 public static String Corrjudgment(String button) {
+		 String decision = "不正解";
+		 if (button.equals("A")) {
+				decision = "正解";
+			}
+		    return decision; 
+		}
+}
+
+
+//---------【JSP】
+// emptyメッセージ表示
+<c:if test="${!empty decision}">
+    <h3><c:out value="${decision}" /></h3>
+</c:if>
+
+// 選択肢の無効化
+<button type="submit" name="button" value=<c:out value="${items.ansNumber}" /> 
+		<c:if test="${!empty decision}">
+		<c:out value="disabled" />
+</c:if>>
