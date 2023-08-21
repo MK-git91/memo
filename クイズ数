@@ -1,0 +1,31 @@
+
+//----------【サーブレット】クイズ数
+// <GET>クイズ数を５つランダム取得
+List<Integer> quizNum =Count.quizCount();
+Collections.shuffle(quizNum);
+session.setAttribute("quizNum", quizNum);
+
+// <POST>
+List<Integer> quizNum = (List<Integer>) session.getAttribute("quizNum"); 
+
+// クイズ取得に使った出題番号ランダムBOXの数値は削除、配列が空になればクイズ終了
+if (submit != null) {
+  quizNum.remove(0);
+  session.setAttribute("quizNum", quizNum);
+}
+
+// 出題番号ランダムBOXが無くなれば結果画面に遷移
+if (quizNum.isEmpty()) {
+  response.sendRedirect("ResultCon");
+  return;
+}
+
+// クイズの取得
+Question quiz = new Question();
+quiz = QuizDao.quizFind(quizNum.get(0));
+session.setAttribute("quiz", quiz);
+
+// 回答選択の取得＆シャッフル
+List<Answer> ansList = AnswerDao.ansFind(quiz.getQuizNumber());
+Collections.shuffle(ansList);
+session.setAttribute("ansList", ansList);
