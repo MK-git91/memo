@@ -1,0 +1,86 @@
+// ログインコントロール
+
+protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		request.setCharacterEncoding("UTF-8");
+
+		try {
+			String userName = request.getParameter("username").strip();
+			String passWord = request.getParameter("password").strip();
+			List<String> eMessage = new ArrayList<>();
+			List<String> removeList = new ArrayList<>(Arrays.asList("空"));
+
+			// 空白だった場合のエラー処理
+			eMessage.add(ErrorMessage.getErrMessIfEmpty(userName, "ユーザー名"));
+			eMessage.add(ErrorMessage.getErrMessIfEmpty(passWord, "パスワード"));
+			
+			eMessage.removeAll(removeList); // エラーが入ってないlistを消す
+			if (!(eMessage.size() == 0)) {
+				request.setAttribute("eMessage", eMessage);
+				doGet(request, response);
+				return;
+			}
+
+			eMessage.add(ErrorMessage.getErrMessverifyLogin(userName, passWord));
+			
+			eMessage.removeAll(removeList); // エラーが入ってないlistを消す
+			if (eMessage.size() == 0) {
+				User user = UserFindDao.userFind(userName);
+				HttpSession session = request.getSession();
+				session.setAttribute("loginUser", user);
+				
+				response.sendRedirect("QuizCon");
+			} else {
+				request.setAttribute("eMessage", eMessage);
+				RequestDispatcher dispatcher = request.getRequestDispatcher("/index.jsp");
+				dispatcher.forward(request, response);
+
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+
+// ログインロジック
+public class LoginLogic {
+	
+	public static boolean verifyLogin(String userName, String passWord) {
+		boolean b = false;
+		try {
+			User user = UserFindDao.userFind(userName);
+			if(userName.equals(user.getUserName()) && passWord.equals(user.getPassword())) {
+				b = true;
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		
+		return b;
+	}
+}
+
+//　メッセージ
+public class ErrorMessage {
+
+	public static String getErrMessIfEmpty(String input, String str) {
+		String eMessage = "空";
+		if (input == "") {
+			eMessage = str + "が未入力です。";
+		}
+
+		return eMessage;
+	}
+
+	public static String getErrMessverifyLogin(String userName, String passWord) {
+		String eMessage = "空";
+		if (!LoginLogic.verifyLogin(userName, passWord)) {
+			eMessage = "ユーザー名またはパスワードは間違っています。";
+		}
+
+		return eMessage;
+	}
+}
